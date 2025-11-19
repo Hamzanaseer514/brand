@@ -74,7 +74,7 @@ export default function AdminLogin() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="w-full pl-10 pr-4 py-3 bg-luxury-black border border-luxury-gold/20 rounded-lg text-luxury-ivory focus:outline-none focus:border-luxury-gold focus:ring-1 focus:ring-luxury-gold"
-                  placeholder="admin@mybrand.com"
+                  placeholder="Enter Email"
                 />
               </div>
             </div>
@@ -111,10 +111,6 @@ export default function AdminLogin() {
               )}
             </button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-luxury-ivory/60">
-            <p>Default: admin@mybrand.com / admin123</p>
-          </div>
         </div>
       </motion.div>
     </div>
