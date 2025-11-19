@@ -1,4 +1,4 @@
-# Luxe Ittar - Premium E-Commerce Website
+# A & N - Premium E-Commerce Website
 
 A fully responsive, modern Next.js eCommerce website for premium Ittar (Arabic perfumes) built with Next.js 14, TypeScript, Tailwind CSS, and Framer Motion.
 

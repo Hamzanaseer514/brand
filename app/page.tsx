@@ -1,34 +1,86 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import HeroSection from '@/components/HeroSection';
 import CategoryCard from '@/components/CategoryCard';
 import LuxuryProductCard from '@/components/LuxuryProductCard';
 import ReviewCarousel from '@/components/ReviewCarousel';
-import { products, testimonials } from '@/lib/data';
 import { motion } from 'framer-motion';
+import { Product } from '@/lib/store';
+import { BASE_URL } from '@/lib/config';
+
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  image?: string;
+}
 
 export default function Home() {
-  const featuredProducts = products.slice(0, 6);
-  const categories = [
-    {
-      name: 'Woody',
-      description: 'Rich oud, sandalwood, and amber scents',
-      image: '/images/1.png',
-      href: '/shop?category=Woody',
-    },
-    {
-      name: 'Floral',
-      description: 'Delicate roses, jasmine, and gardenia',
-      image: '/images/2.png',
-      href: '/shop?category=Floral',
-    },
-    {
-      name: 'Fresh',
-      description: 'Crisp citrus and aquatic notes',
-      image: '/images/3.png',
-      href: '/shop?category=Fresh',
-    },
-  ];
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  useEffect(() => {
+    fetchCategories();
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/products`);
+      const data = await response.json();
+      if (Array.isArray(data) && data.length > 0) {
+        // Take first 6 products as featured
+        setFeaturedProducts(data.slice(0, 6));
+      } else {
+        setFeaturedProducts([]);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setFeaturedProducts([]);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/categories`);
+      const data = await response.json();
+      // Filter out 'All' and take first 3 categories
+      const filteredCategories = Array.isArray(data)
+        ? data.filter((c: any) => c.name !== 'All' && typeof c === 'object').slice(0, 3)
+        : [];
+      setCategories(filteredCategories);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      // Fallback to default categories if API fails
+      setCategories([
+        {
+          id: '1',
+          name: 'Woody',
+          description: 'Rich oud, sandalwood, and amber scents',
+          image: '/images/1.png',
+        },
+        {
+          id: '2',
+          name: 'Floral',
+          description: 'Delicate roses, jasmine, and gardenia',
+          image: '/images/2.png',
+        },
+        {
+          id: '3',
+          name: 'Fresh',
+          description: 'Crisp citrus and aquatic notes',
+          image: '/images/3.png',
+        },
+      ]);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-luxury-black">
@@ -53,17 +105,28 @@ export default function Home() {
             </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {categories.map((category, index) => (
-              <motion.div
-                key={category.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.15 }}
-              >
-                <CategoryCard {...category} />
-              </motion.div>
-            ))}
+            {loadingCategories ? (
+              <div className="col-span-full text-center text-luxury-ivory/60 py-12">Loading categories...</div>
+            ) : categories.length === 0 ? (
+              <div className="col-span-full text-center text-luxury-ivory/60 py-12">No categories available</div>
+            ) : (
+              categories.map((category, index) => (
+                <motion.div
+                  key={category.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.15 }}
+                >
+                  <CategoryCard
+                    name={category.name}
+                    description={category.description || ''}
+                    image={category.image || '/images/1.png'}
+                    href={`/shop?category=${category.name}`}
+                  />
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -85,19 +148,25 @@ export default function Home() {
               Our most beloved fragrances, handpicked for their exceptional quality and timeless appeal
             </p>
           </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <LuxuryProductCard product={product} />
-              </motion.div>
-            ))}
-          </div>
+          {loadingProducts ? (
+            <div className="text-center text-luxury-ivory/60 py-12">Loading products...</div>
+          ) : featuredProducts.length === 0 ? (
+            <div className="text-center text-luxury-ivory/60 py-12">No products available</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredProducts.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <LuxuryProductCard product={product} />
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

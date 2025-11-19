@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronDown } from 'lucide-react';
-import { categories, fragranceTypes } from '@/lib/data';
+import { categories } from '@/lib/data';
+import { BASE_URL } from '@/lib/config';
 
 interface FilterSidebarProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface FilterSidebarProps {
     minRating: number;
   };
   onFilterChange: (filters: any) => void;
+  fragranceTypes?: string[];
 }
 
 export default function FilterSidebar({
@@ -23,8 +25,33 @@ export default function FilterSidebar({
   onClose,
   filters,
   onFilterChange,
+  fragranceTypes: propFragranceTypes,
 }: FilterSidebarProps) {
   const [expandedSections, setExpandedSections] = useState<string[]>(['category', 'price']);
+  const [fragranceTypes, setFragranceTypes] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (propFragranceTypes && propFragranceTypes.length > 0) {
+      setFragranceTypes(propFragranceTypes);
+    } else {
+      fetchFragranceTypes();
+    }
+  }, [propFragranceTypes]);
+
+  const fetchFragranceTypes = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/fragrance-types`);
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        const typeNames = data.map((ft: any) => (typeof ft === 'string' ? ft : ft.name));
+        setFragranceTypes(['All', ...typeNames]);
+      }
+    } catch (error) {
+      console.error('Error fetching fragrance types:', error);
+      // Fallback to default types
+      setFragranceTypes(['All', 'Oriental', 'Floral', 'Floral Oriental', 'Woody', 'Fresh']);
+    }
+  };
 
   const toggleSection = (section: string) => {
     setExpandedSections((prev) =>

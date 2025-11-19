@@ -9,12 +9,13 @@ export interface Product {
   image: string;
   images?: string[];
   category: string;
-  fragranceType: string;
-  fragranceNotes: string[];
-  rating: number;
-  reviewsCount: number;
-  inStock: boolean;
+  fragranceType?: string;
+  fragranceNotes?: string[];
+  rating?: number;
+  reviewsCount?: number;
+  inStock?: boolean;
   size?: string;
+  discount?: number;
 }
 
 export interface CartItem extends Product {
@@ -73,10 +74,13 @@ export const useCartStore = create<CartStore>()(
         set({ items: [] });
       },
       getTotalPrice: () => {
-        return get().items.reduce(
-          (total, item) => total + item.price * item.quantity,
-          0
-        );
+        return get().items.reduce((total, item) => {
+          // Calculate discounted price if discount exists
+          const discountedPrice = item.discount && item.discount > 0
+            ? (item.price * (100 - item.discount)) / 100
+            : item.price;
+          return total + discountedPrice * item.quantity;
+        }, 0);
       },
       getTotalItems: () => {
         return get().items.reduce((total, item) => total + item.quantity, 0);

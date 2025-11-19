@@ -8,7 +8,7 @@ import { Review } from '@/lib/data';
 interface ReviewSectionProps {
   productId: string;
   reviews: Review[];
-  onAddReview: (review: Omit<Review, 'id' | 'date'>) => void;
+  onAddReview: (review: Omit<Review, 'id' | 'date'>) => Promise<void>;
 }
 
 export default function ReviewSection({ productId, reviews, onAddReview }: ReviewSectionProps) {
@@ -20,9 +20,9 @@ export default function ReviewSection({ productId, reviews, onAddReview }: Revie
     comment: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onAddReview({
+    await onAddReview({
       productId,
       ...formData,
     });
@@ -30,13 +30,14 @@ export default function ReviewSection({ productId, reviews, onAddReview }: Revie
     setShowForm(false);
   };
 
-  const filteredReviews = reviews.filter((r) => r.productId === productId);
+  // Reviews are already filtered by productId from the parent component
+  const displayReviews = reviews;
 
   return (
     <div className="mt-16 pt-16 border-t border-luxury-gold/10">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-4xl font-serif text-luxury-ivory">
-          Customer Reviews ({filteredReviews.length})
+          Customer Reviews ({displayReviews.length})
         </h2>
         <motion.button
           whileHover={{ scale: 1.05 }}
@@ -127,10 +128,10 @@ export default function ReviewSection({ productId, reviews, onAddReview }: Revie
       </AnimatePresence>
 
       <div className="space-y-6">
-        {filteredReviews.length === 0 ? (
+        {displayReviews.length === 0 ? (
           <p className="text-center py-12 text-luxury-ivory/50">No reviews yet. Be the first to review!</p>
         ) : (
-          filteredReviews.map((review) => (
+          displayReviews.map((review) => (
             <motion.div
               key={review.id}
               initial={{ opacity: 0, y: 20 }}
@@ -140,7 +141,13 @@ export default function ReviewSection({ productId, reviews, onAddReview }: Revie
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h4 className="font-semibold text-luxury-ivory mb-1">{review.name}</h4>
-                  <p className="text-sm text-luxury-ivory/50">{review.date}</p>
+                  <p className="text-sm text-luxury-ivory/50">
+                    {review.date ? new Date(review.date).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    }) : 'Recently'}
+                  </p>
                 </div>
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (

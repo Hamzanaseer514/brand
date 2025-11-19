@@ -1,16 +1,15 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Star, ShoppingCart, Plus, Minus } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { products, reviews } from '@/lib/data';
-import { useCartStore } from '@/lib/store';
+import { useCartStore, Product } from '@/lib/store';
 import ReviewSection from '@/components/ReviewSection';
 import PerfumeNotesSection from '@/components/PerfumeNotesSection';
 import { Review } from '@/lib/data';
+import { BASE_URL } from '@/lib/config';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -18,13 +17,57 @@ interface PageProps {
 
 export default function ProductDetailPage({ params }: PageProps) {
   const { id } = use(params);
-  const product = products.find((p) => p.id === id);
-  const [selectedImage, setSelectedImage] = useState(product?.image || '');
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [productReviews, setProductReviews] = useState<Review[]>(
-    reviews.filter((r) => r.productId === id)
-  );
+  const [productReviews, setProductReviews] = useState<Review[]>([]);
   const addItem = useCartStore((state) => state.addItem);
+
+  useEffect(() => {
+    fetchProduct();
+  }, [id]);
+
+  const fetchProduct = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/products/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProduct(data);
+        setSelectedImage(data.image || '');
+        // Fetch reviews for this product
+        await fetchReviews(data.id);
+      } else {
+        setProduct(null);
+      }
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      setProduct(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchReviews = async (productId: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/reviews?productId=${productId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProductReviews(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      setProductReviews([]);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-luxury-black flex items-center justify-center">
+        <div className="text-luxury-gold">Loading product...</div>
+      </div>
+    );
+  }
 
   if (!product) {
     notFound();
@@ -32,13 +75,37 @@ export default function ProductDetailPage({ params }: PageProps) {
 
   const productImages = product.images || [product.image];
 
-  const handleAddReview = (reviewData: Omit<Review, 'id' | 'date'>) => {
-    const newReview: Review = {
-      ...reviewData,
-      id: Date.now().toString(),
-      date: new Date().toISOString().split('T')[0],
-    };
-    setProductReviews([...productReviews, newReview]);
+  const handleAddReview = async (reviewData: Omit<Review, 'id' | 'date'>) => {
+    try {
+      // Save review to API
+      const response = await fetch(`${BASE_URL}/api/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: id,
+          name: reviewData.name,
+          email: reviewData.email,
+          rating: reviewData.rating,
+          comment: reviewData.comment,
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh reviews and product data to get updated rating
+        await fetchReviews(id);
+        await fetchProduct();
+        // Show success message
+        alert('Review added successfully! Product rating has been updated.');
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Failed to add review');
+      }
+    } catch (error) {
+      console.error('Error adding review:', error);
+      alert('Failed to add review. Please try again.');
+    }
   };
 
   const handleAddToCart = () => {
@@ -139,7 +206,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                     <Star
                       key={i}
                       className={`${
-                        i < Math.floor(product.rating)
+                        i < Math.floor(product.rating || 0)
                           ? 'fill-luxury-gold text-luxury-gold'
                           : 'text-luxury-ivory/20'
                       }`}
@@ -149,12 +216,30 @@ export default function ProductDetailPage({ params }: PageProps) {
                   ))}
                 </div>
                 <span className="text-sm sm:text-base md:text-lg text-luxury-ivory/60">
-                  {product.rating} ({product.reviewsCount} reviews)
+                  {product.rating || 0} ({(product.reviewsCount || 0)} reviews)
                 </span>
               </div>
 
-              <div className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-luxury-gold mb-4 sm:mb-6 md:mb-8">
-                ${product.price}
+              <div className="mb-4 sm:mb-6 md:mb-8">
+                {product.discount && product.discount > 0 ? (
+                  <div className="flex flex-col">
+                    <span className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-luxury-gold">
+                      Rs {((product.price * (100 - product.discount)) / 100).toFixed(2)}
+                    </span>
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="text-xl sm:text-2xl text-luxury-ivory/50 line-through">
+                        Rs {product.price}
+                      </span>
+                      <span className="px-3 py-1 bg-red-500/20 border border-red-500/50 text-red-400 rounded-full text-sm font-semibold">
+                        {product.discount}% OFF
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-luxury-gold">
+                    Rs {product.price}
+                  </span>
+                )}
               </div>
 
               <p className="text-luxury-ivory/70 mb-6 sm:mb-8 leading-relaxed text-base sm:text-lg">
@@ -167,10 +252,12 @@ export default function ProductDetailPage({ params }: PageProps) {
                   <p className="text-xs sm:text-sm text-luxury-ivory/50 mb-1">Category</p>
                   <p className="text-sm sm:text-base text-luxury-gold font-medium">{product.category}</p>
                 </div>
-                <div>
-                  <p className="text-xs sm:text-sm text-luxury-ivory/50 mb-1">Type</p>
-                  <p className="text-sm sm:text-base text-luxury-gold font-medium">{product.fragranceType}</p>
-                </div>
+                {product.fragranceType && (
+                  <div>
+                    <p className="text-xs sm:text-sm text-luxury-ivory/50 mb-1">Type</p>
+                    <p className="text-sm sm:text-base text-luxury-gold font-medium">{product.fragranceType}</p>
+                  </div>
+                )}
                 {product.size && (
                   <div>
                     <p className="text-xs sm:text-sm text-luxury-ivory/50 mb-1">Size</p>
@@ -220,7 +307,7 @@ export default function ProductDetailPage({ params }: PageProps) {
         </div>
 
         {/* Fragrance Notes Pyramid */}
-        <PerfumeNotesSection notes={product.fragranceNotes} fragranceType={product.fragranceType} />
+        <PerfumeNotesSection notes={product.fragranceNotes || []} fragranceType={product.fragranceType || 'Oriental'} />
 
         {/* Reviews Section */}
         <ReviewSection

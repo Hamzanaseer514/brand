@@ -53,9 +53,22 @@ export default function CartItem({ item }: CartItemProps) {
               <Plus size={16} style={{ width: 'clamp(14px, 4vw, 18px)', height: 'clamp(14px, 4vw, 18px)' }} />
             </button>
           </div>
-          <span className="text-xl sm:text-2xl font-serif font-semibold text-luxury-gold">
-            ${(item.price * item.quantity).toFixed(2)}
-          </span>
+          <div className="flex flex-col">
+            {item.discount && item.discount > 0 ? (
+              <>
+                <span className="text-xl sm:text-2xl font-serif font-semibold text-luxury-gold">
+                  Rs {(((item.price * (100 - item.discount)) / 100) * item.quantity).toFixed(2)}
+                </span>
+                <span className="text-sm text-luxury-ivory/50 line-through">
+                  Rs {(item.price * item.quantity).toFixed(2)}
+                </span>
+              </>
+            ) : (
+              <span className="text-xl sm:text-2xl font-serif font-semibold text-luxury-gold">
+                Rs {(item.price * item.quantity).toFixed(2)}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

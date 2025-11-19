@@ -66,7 +66,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                         <Star
                           key={i}
                           className={`${
-                            i < Math.floor(product.rating)
+                            i < Math.floor(product.rating || 0)
                               ? 'fill-luxury-gold text-luxury-gold'
                               : 'text-luxury-ivory/20'
                           }`}
@@ -75,7 +75,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                       ))}
                     </div>
                     <span className="text-sm text-luxury-ivory/50">
-                      {product.rating} ({product.reviewsCount} reviews)
+                      {product.rating || 0} ({product.reviewsCount || 0} reviews)
                     </span>
                   </div>
 
@@ -83,24 +83,37 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                     {product.description}
                   </p>
 
-                  <div className="mb-6">
-                    <p className="text-sm text-luxury-ivory/60 mb-2">Fragrance Notes:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {product.fragranceNotes.slice(0, 4).map((note) => (
-                        <span
-                          key={note}
-                          className="px-3 py-1 bg-luxury-gold/10 border border-luxury-gold/30 rounded-full text-xs text-luxury-gold"
-                        >
-                          {note}
-                        </span>
-                      ))}
+                  {product.fragranceNotes && product.fragranceNotes.length > 0 && (
+                    <div className="mb-6">
+                      <p className="text-sm text-luxury-ivory/60 mb-2">Fragrance Notes:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {product.fragranceNotes.slice(0, 4).map((note) => (
+                          <span
+                            key={note}
+                            className="px-3 py-1 bg-luxury-gold/10 border border-luxury-gold/30 rounded-full text-xs text-luxury-gold"
+                          >
+                            {note}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="flex items-center justify-between mb-6 pt-6 border-t border-luxury-gold/10">
-                    <span className="text-3xl font-serif font-semibold text-luxury-gold">
-                      ${product.price}
-                    </span>
+                    {product.discount && product.discount > 0 ? (
+                      <div className="flex flex-col">
+                        <span className="text-3xl font-serif font-semibold text-luxury-gold">
+                          Rs {((product.price * (100 - product.discount)) / 100).toFixed(2)}
+                        </span>
+                        <span className="text-sm text-luxury-ivory/50 line-through">
+                          Rs {product.price}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-3xl font-serif font-semibold text-luxury-gold">
+                        Rs {product.price}
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex gap-4">

@@ -25,6 +25,7 @@ export default function Navbar() {
     { href: '/shop', label: 'Shop' },
     { href: '/about', label: 'About' },
     { href: '/contact', label: 'Contact' },
+    { href: '/track-order', label: 'Track Order' },
   ];
 
   return (
@@ -45,7 +46,7 @@ export default function Navbar() {
               whileHover={{ scale: 1.05 }}
               className="text-2xl md:text-3xl font-serif font-bold bg-gradient-to-r from-luxury-gold via-luxury-gold-light to-luxury-gold bg-clip-text text-transparent tracking-wide"
             >
-              Luxe Ittar
+              A & N
             </motion.div>
           </Link>
 

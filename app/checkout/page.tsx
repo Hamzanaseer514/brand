@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useCartStore } from '@/lib/store';
 import Link from 'next/link';
+import { BASE_URL } from '@/lib/config';
 
 export default function CheckoutPage() {
   const items = useCartStore((state) => state.items);
@@ -21,20 +22,67 @@ export default function CheckoutPage() {
     state: '',
     zipCode: '',
     country: '',
-    cardNumber: '',
-    cardName: '',
-    expiryDate: '',
-    cvv: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const subtotal = getTotalPrice();
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Order placed successfully! (This is a mock checkout)');
-    clearCart();
+    setIsSubmitting(true);
+    
+    try {
+      const orderData = {
+        items: items.map(item => ({
+          productId: item.id,
+          name: item.name,
+          price: item.discount && item.discount > 0 
+            ? (item.price * (100 - item.discount)) / 100 
+            : item.price,
+          quantity: item.quantity,
+          image: item.image,
+        })),
+        customerName: `${formData.firstName} ${formData.lastName}`,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        shippingAddress: {
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: formData.country,
+        },
+        subtotal: subtotal,
+        tax: tax,
+        total: total,
+      };
+
+      const response = await fetch(`${BASE_URL}/api/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`Order placed successfully! Invoice has been sent to ${formData.email}`);
+        clearCart();
+        // Redirect to home or order confirmation page
+        window.location.href = '/';
+      } else {
+        alert(`Error: ${data.error || 'Failed to place order'}`);
+      }
+    } catch (error) {
+      console.error('Error placing order:', error);
+      alert('Failed to place order. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -187,69 +235,6 @@ export default function CheckoutPage() {
               </div>
             </motion.div>
 
-            {/* Payment Information */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="glass p-8 rounded-2xl border border-luxury-gold/20"
-            >
-              <h2 className="text-3xl font-serif font-bold text-luxury-ivory mb-8 flex items-center gap-3">
-                <Lock className="text-luxury-gold" size={28} />
-                Payment Information
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-luxury-ivory/70 mb-2">Card Number *</label>
-                  <input
-                    type="text"
-                    name="cardNumber"
-                    required
-                    placeholder="1234 5678 9012 3456"
-                    value={formData.cardNumber}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg bg-luxury-charcoal/50 border border-luxury-gold/20 focus:outline-none focus:border-luxury-gold focus:ring-2 focus:ring-luxury-gold/30 text-luxury-ivory"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-luxury-ivory/70 mb-2">Cardholder Name *</label>
-                  <input
-                    type="text"
-                    name="cardName"
-                    required
-                    value={formData.cardName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg bg-luxury-charcoal/50 border border-luxury-gold/20 focus:outline-none focus:border-luxury-gold focus:ring-2 focus:ring-luxury-gold/30 text-luxury-ivory"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-luxury-ivory/70 mb-2">Expiry Date *</label>
-                    <input
-                      type="text"
-                      name="expiryDate"
-                      required
-                      placeholder="MM/YY"
-                      value={formData.expiryDate}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg bg-luxury-charcoal/50 border border-luxury-gold/20 focus:outline-none focus:border-luxury-gold focus:ring-2 focus:ring-luxury-gold/30 text-luxury-ivory"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-luxury-ivory/70 mb-2">CVV *</label>
-                    <input
-                      type="text"
-                      name="cvv"
-                      required
-                      placeholder="123"
-                      value={formData.cvv}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg bg-luxury-charcoal/50 border border-luxury-gold/20 focus:outline-none focus:border-luxury-gold focus:ring-2 focus:ring-luxury-gold/30 text-luxury-ivory"
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
           </div>
 
           {/* Order Summary */}
@@ -262,38 +247,57 @@ export default function CheckoutPage() {
               <h2 className="text-3xl font-serif font-bold text-luxury-ivory mb-8">Order Summary</h2>
 
               <div className="space-y-4 mb-8">
-                {items.map((item) => (
-                  <div key={item.id} className="flex justify-between text-sm text-luxury-ivory/80">
-                    <span>
-                      {item.name} x{item.quantity}
-                    </span>
-                    <span>${(item.price * item.quantity).toFixed(2)}</span>
-                  </div>
-                ))}
+                {items.map((item) => {
+                  const discountedPrice = item.discount && item.discount > 0
+                    ? (item.price * (100 - item.discount)) / 100
+                    : item.price;
+                  return (
+                    <div key={item.id} className="flex flex-col gap-1">
+                      <div className="flex justify-between text-sm text-luxury-ivory/80">
+                        <span>
+                          {item.name} x{item.quantity}
+                        </span>
+                        {item.discount && item.discount > 0 ? (
+                          <div className="flex flex-col items-end">
+                            <span className="text-luxury-gold font-semibold">
+                              Rs {(discountedPrice * item.quantity).toFixed(2)}
+                            </span>
+                            <span className="text-xs text-luxury-ivory/50 line-through">
+                              Rs {(item.price * item.quantity).toFixed(2)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span>Rs {(item.price * item.quantity).toFixed(2)}</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="border-t border-luxury-gold/20 pt-4 space-y-4 mb-8">
                 <div className="flex justify-between text-luxury-ivory/80">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>Rs {subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-luxury-ivory/80">
                   <span>Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>Rs {tax.toFixed(2)}</span>
                 </div>
                 <div className="border-t border-luxury-gold/20 pt-4 flex justify-between text-2xl font-serif font-semibold text-luxury-gold">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>Rs {total.toFixed(2)}</span>
                 </div>
               </div>
 
               <motion.button
                 type="submit"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full px-6 py-4 bg-gradient-to-r from-luxury-gold to-luxury-gold-dark text-luxury-black font-semibold rounded-lg hover:shadow-luxury-lg transition-all gold-glow"
+                disabled={isSubmitting}
+                whileHover={{ scale: isSubmitting ? 1 : 1.05 }}
+                whileTap={{ scale: isSubmitting ? 1 : 0.95 }}
+                className="w-full px-6 py-4 bg-gradient-to-r from-luxury-gold to-luxury-gold-dark text-luxury-black font-semibold rounded-lg hover:shadow-luxury-lg transition-all gold-glow disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Place Order
+                {isSubmitting ? 'Placing Order...' : 'Place Order'}
               </motion.button>
             </motion.div>
           </div>

@@ -7,16 +7,20 @@ import { motion } from 'framer-motion';
 import LuxuryProductCard from '@/components/LuxuryProductCard';
 import LuxuryProductListItem from '@/components/LuxuryProductListItem';
 import FilterSidebar from '@/components/FilterSidebar';
-import { products } from '@/lib/data';
+import { Product } from '@/lib/store';
+import { BASE_URL } from '@/lib/config';
 
 type SortOption = 'newest' | 'popularity' | 'price-low' | 'price-high';
 
 function ShopPageContent() {
   const searchParams = useSearchParams();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [fragranceTypes, setFragranceTypes] = useState<string[]>([]);
   const [filters, setFilters] = useState({
     category: 'All',
     fragranceType: 'All',
@@ -26,28 +30,70 @@ function ShopPageContent() {
   });
 
   useEffect(() => {
+    fetchProducts();
+    fetchFragranceTypes();
+  }, []);
+
+  const fetchFragranceTypes = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/fragrance-types`);
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        const typeNames = data.map((ft: any) => (typeof ft === 'string' ? ft : ft.name));
+        setFragranceTypes(['All', ...typeNames]);
+      }
+    } catch (error) {
+      console.error('Error fetching fragrance types:', error);
+      // Fallback to default types
+      setFragranceTypes(['All', 'Oriental', 'Floral', 'Floral Oriental', 'Woody', 'Fresh']);
+    }
+  };
+
+  useEffect(() => {
     const categoryParam = searchParams.get('category');
     if (categoryParam) {
       setFilters((prev) => ({ ...prev, category: categoryParam }));
     }
   }, [searchParams]);
 
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/products`);
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setProducts(data);
+        // Update max price filter based on actual products
+        if (data.length > 0) {
+          const maxPrice = Math.max(...data.map((p: Product) => p.price));
+          setFilters((prev) => ({ ...prev, maxPrice: Math.ceil(maxPrice) }));
+        }
+      } else {
+        setProducts([]);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = products.filter((product) => {
       const matchesSearch =
         searchQuery === '' ||
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.fragranceNotes.some((note) =>
+        (product.fragranceNotes && product.fragranceNotes.some((note) =>
           note.toLowerCase().includes(searchQuery.toLowerCase())
-        ) ||
+        )) ||
         product.description.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesCategory = filters.category === 'All' || product.category === filters.category;
       const matchesFragranceType =
-        filters.fragranceType === 'All' || product.fragranceType === filters.fragranceType;
+        filters.fragranceType === 'All' || (product.fragranceType && product.fragranceType === filters.fragranceType);
       const matchesPrice =
         product.price >= filters.minPrice && product.price <= filters.maxPrice;
-      const matchesRating = product.rating >= filters.minRating;
+      const matchesRating = (product.rating || 0) >= filters.minRating;
 
       return (
         matchesSearch &&
@@ -66,16 +112,17 @@ function ShopPageContent() {
         filtered.sort((a, b) => b.price - a.price);
         break;
       case 'popularity':
-        filtered.sort((a, b) => b.reviewsCount - a.reviewsCount);
+        filtered.sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
         break;
       case 'newest':
       default:
+        // Sort by id (newest first) or by creation date if available
         filtered.sort((a, b) => b.id.localeCompare(a.id));
         break;
     }
 
     return filtered;
-  }, [searchQuery, filters, sortBy]);
+  }, [products, searchQuery, filters, sortBy]);
 
   return (
     <div className="min-h-screen bg-luxury-black pt-24 md:pt-28 pb-12 md:pb-20">
@@ -155,12 +202,18 @@ function ShopPageContent() {
         </div>
 
         {/* Products Count */}
+        {!loading && (
         <p className="text-luxury-ivory/50 mb-8 text-sm">
           Showing {filteredAndSortedProducts.length} product{filteredAndSortedProducts.length !== 1 ? 's' : ''}
         </p>
+        )}
 
         {/* Products Grid */}
-        {filteredAndSortedProducts.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-20">
+            <p className="text-luxury-ivory/60">Loading products...</p>
+          </div>
+        ) : filteredAndSortedProducts.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-2xl text-luxury-ivory/60 mb-4">No products found</p>
             <p className="text-luxury-ivory/40">Try adjusting your filters or search query</p>
@@ -197,6 +250,7 @@ function ShopPageContent() {
         onClose={() => setIsFilterOpen(false)}
         filters={filters}
         onFilterChange={setFilters}
+        fragranceTypes={fragranceTypes}
       />
     </div>
   );

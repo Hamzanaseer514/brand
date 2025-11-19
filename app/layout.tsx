@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter, Cinzel, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import FloatingCart from "@/components/FloatingCart";
+import ConditionalLayout from "@/components/ConditionalLayout";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -30,7 +28,7 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Luxe Ittar - Premium Arabic Perfumes",
+  title: "A & N - Premium Arabic Perfumes",
   description: "The Essence of Tradition, Crafted with Luxury. Discover our collection of premium ittars crafted with traditional artistry and the finest ingredients.",
 };
 
@@ -44,10 +42,7 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${inter.variable} ${cinzel.variable} ${cormorant.variable} antialiased bg-luxury-black text-luxury-ivory`}
       >
-        <Navbar />
-        {children}
-        <FloatingCart />
-        <Footer />
+        <ConditionalLayout>{children}</ConditionalLayout>
       </body>
     </html>
   );

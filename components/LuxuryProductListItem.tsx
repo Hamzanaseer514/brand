@@ -66,7 +66,7 @@ export default function LuxuryProductListItem({ product }: LuxuryProductListItem
                   <Star
                     key={i}
                     className={`${
-                      i < Math.floor(product.rating)
+                      i < Math.floor(product.rating ?? 0)
                         ? 'fill-luxury-gold text-luxury-gold'
                         : 'text-luxury-ivory/20'
                     }`}
@@ -97,8 +97,21 @@ export default function LuxuryProductListItem({ product }: LuxuryProductListItem
 
           {/* Bottom Section - Price and Actions */}
           <div className="flex items-center justify-between pt-4 border-t border-luxury-gold/10">
-            <div className="text-2xl sm:text-3xl font-serif font-bold text-luxury-gold">
-              ${product.price}
+            <div className="flex flex-col">
+              {product.discount && product.discount > 0 ? (
+                <>
+                  <span className="text-2xl sm:text-3xl font-serif font-bold text-luxury-gold">
+                    Rs {((product.price * (100 - product.discount)) / 100).toFixed(2)}
+                  </span>
+                  <span className="text-sm text-luxury-ivory/50 line-through">
+                    Rs {product.price}
+                  </span>
+                </>
+              ) : (
+                <span className="text-2xl sm:text-3xl font-serif font-bold text-luxury-gold">
+                  Rs {product.price}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <motion.button

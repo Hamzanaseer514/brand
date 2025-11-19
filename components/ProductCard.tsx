@@ -50,7 +50,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               <FiStar
                 key={i}
                 className={`${
-                  i < Math.floor(product.rating)
+                  i < Math.floor(product.rating ?? 0)
                     ? 'fill-gold text-gold'
                     : 'text-gray-300'
                 }`}
@@ -64,7 +64,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
         
         <div className="flex items-center justify-between">
-          <span className="text-2xl font-bold text-gold">${product.price}</span>
+          <span className="text-2xl font-bold text-gold">Rs {product.price}</span>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

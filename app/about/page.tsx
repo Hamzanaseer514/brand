@@ -69,7 +69,7 @@ export default function AboutPage() {
           <h2 className="text-5xl font-serif font-bold text-luxury-ivory mb-8">The Art of Ittar</h2>
           <div className="prose prose-lg text-luxury-ivory/80 space-y-6 leading-relaxed">
             <p>
-              At Luxe Ittar, we believe that fragrance is more than just a scent—it&apos;s an
+              At A & N, we believe that fragrance is more than just a scent—it&apos;s an
               experience, a memory, and an expression of individuality. Our journey began with a
               passion for preserving the ancient art of Arabic perfumery while bringing it to the
               modern world.
@@ -184,14 +184,14 @@ export default function AboutPage() {
           <div className="prose prose-lg text-luxury-ivory/80 space-y-6 leading-relaxed">
             <p>
               Inspired by the legendary perfumers of the Middle East and the aromatic traditions of
-              the Silk Road, Luxe Ittar brings together the best of Eastern and Western
+              the Silk Road, A & N brings together the best of Eastern and Western
               perfumery. Our scents evoke the mystique of ancient bazaars, the tranquility of
               desert oases, and the opulence of royal courts.
             </p>
             <p>
               We are committed to sustainability and ethical sourcing, ensuring that our passion for
               fragrance contributes positively to the communities and ecosystems that provide our
-              ingredients. When you choose Luxe Ittar, you&apos;re not just selecting a fragrance
+              ingredients. When you choose A & N, you&apos;re not just selecting a fragrance
               —you&apos;re becoming part of a legacy.
             </p>
           </div>
