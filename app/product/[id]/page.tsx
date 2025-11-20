@@ -1,6 +1,6 @@
 'use client';
-export const dynamic = "force-dynamic";
-import {useEffect, useState } from 'react';
+
+import {use, useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Star, ShoppingCart, Plus, Minus } from 'lucide-react';
@@ -12,11 +12,11 @@ import { Review } from '@/lib/data';
 import { BASE_URL } from '@/lib/config';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function ProductDetailPage({ params }: PageProps) {
-  const id = params.id;
+  const { id } = use(params);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState('');
