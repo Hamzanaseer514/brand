@@ -58,8 +58,8 @@ export default function ContactPage() {
     {
       icon: Mail,
       title: 'Email',
-      content: 'info@luxeittar.com',
-      link: 'mailto:info@luxeittar.com',
+      content: 'aandnscents@gmail.com',
+      link: 'mailto:aandnscents@gmail.com',
     },
     {
       icon: Phone,

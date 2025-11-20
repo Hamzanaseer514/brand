@@ -26,7 +26,7 @@ export default function Footer() {
     { icon: Facebook, href: '#', label: 'Facebook' },
     { icon: Instagram, href: '#', label: 'Instagram' },
     { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Mail, href: '#', label: 'Email' },
+    { icon: Mail, href: 'mailto:aandnscents@gmail.com', label: 'Email' },
   ];
 
   return (
@@ -122,7 +122,9 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3 text-sm text-luxury-ivory/70">
                 <Mail className="text-luxury-gold" size={16} />
-                <span>info@luxeittar.com</span>
+                <a href="mailto:aandnscents@gmail.com" className="hover:text-luxury-gold transition-colors">
+                  aandnscents@gmail.com
+                </a>
               </div>
             </div>
             
