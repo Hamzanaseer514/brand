@@ -41,8 +41,11 @@ export default function Footer() {
             <h3 className="text-3xl font-serif font-bold mb-4 bg-gradient-to-r from-luxury-gold to-luxury-gold-light bg-clip-text text-transparent">
               A & N
             </h3>
-            <p className="text-luxury-ivory/70 mb-6 leading-relaxed">
+            <p className="text-luxury-ivory/70 mb-2 leading-relaxed">
               The Essence of Tradition, Crafted with Luxury. Experience authentic Arabic perfumery with our premium collection.
+            </p>
+            <p className="text-luxury-gold/80 mb-6 text-sm font-medium">
+              Owner: Rana Nouman
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((social) => {
@@ -113,7 +116,9 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3 text-sm text-luxury-ivory/70">
                 <Phone className="text-luxury-gold" size={16} />
-                <span>+1 (555) 123-4567</span>
+                <a href="tel:+923474566501" className="hover:text-luxury-gold transition-colors">
+                  +92 347 4566501
+                </a>
               </div>
               <div className="flex items-center gap-3 text-sm text-luxury-ivory/70">
                 <Mail className="text-luxury-gold" size={16} />
@@ -147,7 +152,7 @@ export default function Footer() {
         {/* Copyright */}
         <div className="border-t border-luxury-gold/10 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-luxury-ivory/50">
-            &copy; {currentYear} A & N. All rights reserved.
+            &copy; {currentYear} A & N by Rana Nouman. All rights reserved.
           </p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <Link href="#" className="text-sm text-luxury-ivory/50 hover:text-luxury-gold transition-colors">

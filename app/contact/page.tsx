@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
+import { BASE_URL } from '@/lib/config';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -10,11 +11,38 @@ export default function ContactPage() {
     email: '',
     message: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Thank you for your message! We will get back to you soon.');
-    setFormData({ name: '', email: '', message: '' });
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
+
+    try {
+      const apiUrl = BASE_URL ? `${BASE_URL}/api/contact` : `/api/contact`;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubmitStatus({ type: 'success', message: data.message || 'Thank you for your message! We will get back to you soon.' });
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        setSubmitStatus({ type: 'error', message: data.error || 'Failed to send message. Please try again.' });
+      }
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      setSubmitStatus({ type: 'error', message: 'Connection error. Please check your internet connection and try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (
@@ -36,8 +64,8 @@ export default function ContactPage() {
     {
       icon: Phone,
       title: 'Phone',
-      content: '+1 (555) 123-4567',
-      link: 'tel:+15551234567',
+      content: '+92 347 4566501',
+      link: 'tel:+923474566501',
     },
     {
       icon: MapPin,
@@ -108,14 +136,36 @@ export default function ContactPage() {
                   className="w-full px-4 py-3 rounded-lg bg-luxury-charcoal/50 border border-luxury-gold/20 focus:outline-none focus:border-luxury-gold focus:ring-2 focus:ring-luxury-gold/30 text-luxury-ivory resize-none"
                 />
               </div>
+              {submitStatus.type && (
+                <div
+                  className={`p-4 rounded-lg ${
+                    submitStatus.type === 'success'
+                      ? 'bg-green-500/20 border border-green-500/50 text-green-400'
+                      : 'bg-red-500/20 border border-red-500/50 text-red-400'
+                  }`}
+                >
+                  {submitStatus.message}
+                </div>
+              )}
+
               <motion.button
                 type="submit"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full px-6 py-4 bg-gradient-to-r from-luxury-gold to-luxury-gold-dark text-luxury-black font-semibold rounded-lg hover:shadow-luxury-lg transition-all gold-glow flex items-center justify-center gap-3"
+                disabled={isSubmitting}
+                whileHover={!isSubmitting ? { scale: 1.05 } : {}}
+                whileTap={!isSubmitting ? { scale: 0.95 } : {}}
+                className="w-full px-6 py-4 bg-gradient-to-r from-luxury-gold to-luxury-gold-dark text-luxury-black font-semibold rounded-lg hover:shadow-luxury-lg transition-all gold-glow flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Send Message
-                <Send size={20} />
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    Send Message
+                    <Send size={20} />
+                  </>
+                )}
               </motion.button>
             </form>
           </motion.div>

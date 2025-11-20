@@ -69,7 +69,7 @@ export default function AboutPage() {
           <h2 className="text-5xl font-serif font-bold text-luxury-ivory mb-8">The Art of Ittar</h2>
           <div className="prose prose-lg text-luxury-ivory/80 space-y-6 leading-relaxed">
             <p>
-              At A & N, we believe that fragrance is more than just a scent—it&apos;s an
+              At A & N, founded by <strong className="text-luxury-gold">Rana Nouman</strong>, we believe that fragrance is more than just a scent—it&apos;s an
               experience, a memory, and an expression of individuality. Our journey began with a
               passion for preserving the ancient art of Arabic perfumery while bringing it to the
               modern world.

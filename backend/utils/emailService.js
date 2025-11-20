@@ -489,5 +489,175 @@ export const sendAdminNotificationEmail = async (order) => {
   }
 };
 
-export default { sendInvoiceEmail, sendAdminNotificationEmail };
+// Generate contact form email HTML
+const generateContactFormHTML = (contactData) => {
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f4f4f4;
+        }
+        .email-container {
+          background-color: #ffffff;
+          padding: 30px;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+          text-align: center;
+          border-bottom: 3px solid #d4af37;
+          padding-bottom: 20px;
+          margin-bottom: 30px;
+        }
+        .header h1 {
+          color: #1a1a1a;
+          margin: 0;
+          font-size: 28px;
+        }
+        .header p {
+          color: #666;
+          margin: 5px 0;
+        }
+        .contact-info {
+          background-color: #f9f9f9;
+          padding: 20px;
+          border-radius: 5px;
+          margin-bottom: 20px;
+        }
+        .contact-info h3 {
+          color: #1a1a1a;
+          margin-top: 0;
+          font-size: 16px;
+          text-transform: uppercase;
+          border-bottom: 2px solid #d4af37;
+          padding-bottom: 10px;
+          margin-bottom: 15px;
+        }
+        .info-row {
+          margin-bottom: 15px;
+        }
+        .info-label {
+          font-weight: bold;
+          color: #1a1a1a;
+          display: inline-block;
+          width: 100px;
+        }
+        .info-value {
+          color: #333;
+        }
+        .message-box {
+          background-color: #fff;
+          border: 2px solid #d4af37;
+          border-radius: 5px;
+          padding: 20px;
+          margin-top: 20px;
+        }
+        .message-box h3 {
+          color: #1a1a1a;
+          margin-top: 0;
+          font-size: 16px;
+          text-transform: uppercase;
+          border-bottom: 2px solid #d4af37;
+          padding-bottom: 10px;
+          margin-bottom: 15px;
+        }
+        .message-content {
+          color: #333;
+          white-space: pre-wrap;
+          line-height: 1.8;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #ddd;
+          color: #666;
+          font-size: 12px;
+        }
+        .date-info {
+          text-align: right;
+          color: #666;
+          font-size: 12px;
+          margin-bottom: 20px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="email-container">
+        <div class="header">
+          <h1>📧 New Contact Form Submission</h1>
+          <p>A & N - Premium Arabic Perfumes</p>
+        </div>
+
+        <div class="date-info">
+          <strong>Received:</strong> ${currentDate}
+        </div>
+
+        <div class="contact-info">
+          <h3>Contact Information</h3>
+          <div class="info-row">
+            <span class="info-label">Name:</span>
+            <span class="info-value">${contactData.name}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email:</span>
+            <span class="info-value"><a href="mailto:${contactData.email}" style="color: #d4af37; text-decoration: none;">${contactData.email}</a></span>
+          </div>
+        </div>
+
+        <div class="message-box">
+          <h3>Message</h3>
+          <div class="message-content">${contactData.message}</div>
+        </div>
+
+        <div class="footer">
+          <p>This email was sent from the A & N website contact form.</p>
+          <p>You can reply directly to this email to respond to ${contactData.name}.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+// Send contact form email to admin
+export const sendContactFormEmail = async (contactData) => {
+  try {
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: `"A & N Contact Form" <${process.env.SMTP_USER || process.env.ADMIN_EMAIL}>`,
+      to: process.env.ADMIN_EMAIL,
+      replyTo: contactData.email, // Allow admin to reply directly to customer
+      subject: `📧 New Contact Form Message from ${contactData.name}`,
+      html: generateContactFormHTML(contactData),
+      text: `New Contact Form Submission\n\nName: ${contactData.name}\nEmail: ${contactData.email}\n\nMessage:\n${contactData.message}\n\nReceived: ${new Date().toLocaleString()}`,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Contact form email sent:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending contact form email:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+export default { sendInvoiceEmail, sendAdminNotificationEmail, sendContactFormEmail };
 

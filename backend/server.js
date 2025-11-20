@@ -12,6 +12,7 @@ import testimonialRoutes from './routes/testimonials.js';
 import authRoutes from './routes/auth.js';
 import orderRoutes from './routes/orders.js';
 import uploadRoutes from './routes/upload.js';
+import contactRoutes from './routes/contact.js';
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
