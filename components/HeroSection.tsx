@@ -7,21 +7,39 @@ import { useEffect, useRef, useState } from 'react';
 
 export default function HeroSection() {
   const ref = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Check if mobile/tablet to disable parallax
+  useEffect(() => {
+    setMounted(true);
+    let resizeTimer: NodeJS.Timeout;
+    const checkMobile = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const isMobileDevice = window.innerWidth < 768 || window.innerHeight < 700;
+        setIsMobile(isMobileDevice);
+      }, 150);
+    };
+    // Initial check
+    const isMobileDevice = typeof window !== 'undefined' && (window.innerWidth < 768 || window.innerHeight < 700);
+    setIsMobile(isMobileDevice);
+    
+    window.addEventListener('resize', checkMobile, { passive: true });
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      clearTimeout(resizeTimer);
+    };
+  }, []);
+
+  // Only enable parallax on desktop
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start start', 'end start'],
   });
+  
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
   const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
-
-  // Disable heavy parallax on compact/short screens so CTA doesn't disappear
-  const [compact, setCompact] = useState(false);
-  useEffect(() => {
-    const check = () => setCompact(window.innerHeight < 700);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
 
   return (
     <div ref={ref} className="relative min-h-[550px] sm:min-h-[650px] md:min-h-screen flex items-center justify-center overflow-hidden bg-luxury-black pt-20 md:pt-28 pb-12 sm:pb-24 md:pb-28">
@@ -59,7 +77,7 @@ export default function HeroSection() {
 
       {/* Parallax Content */}
       <motion.div
-        style={compact ? { opacity: 1 } : { y, opacity }}
+        style={isMobile || !mounted ? { opacity: 1, y: 0 } : { y, opacity }}
         className="relative z-20 container mx-auto px-4 sm:px-6 text-center"
       >
         {/* Perfume Bottles */}
@@ -101,9 +119,10 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.8 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
+          style={{ willChange: isMobile ? 'auto' : 'transform' }}
         >
-          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-display font-bold mb-2 sm:mb-5 md:mb-6 bg-gradient-to-r from-luxury-gold via-luxury-gold-light to-luxury-gold bg-clip-text text-transparent px-2">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-display font-bold mb-2 sm:mb-5 md:mb-6 bg-gradient-to-r from-luxury-gold via-luxury-gold-light to-luxury-gold bg-clip-text text-transparent px-2 leading-tight">
             The Essence of Tradition
           </h1>
           <p className="text-sm sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-serif text-luxury-ivory/80 tracking-wider px-2">
@@ -117,6 +136,7 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.8 }}
           className="text-luxury-ivory/70 max-w-2xl mx-auto mb-6 sm:mb-12 md:mb-16 text-sm sm:text-lg md:text-xl leading-relaxed px-4"
+          style={{ willChange: isMobile ? 'auto' : 'transform' }}
         >
           Discover our exquisite collection of premium ittars, where ancient traditions meet
           contemporary elegance. Each fragrance is a masterpiece of artistry.
@@ -127,23 +147,27 @@ export default function HeroSection() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1, duration: 0.5 }}
+          style={{ willChange: isMobile ? 'auto' : 'transform' }}
         >
           <Link href="/shop" className="block px-2">
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              whileHover={!isMobile ? { scale: 1.05 } : {}}
               whileTap={{ scale: 0.95 }}
               className="group relative inline-flex px-6 sm:px-10 md:px-12 lg:px-14 py-2.5 sm:py-3.5 md:py-4 bg-gradient-to-r from-luxury-gold to-luxury-gold-dark text-luxury-black font-semibold text-xs sm:text-base md:text-lg lg:text-xl tracking-wide uppercase rounded-full overflow-hidden gold-glow w-full sm:w-auto"
+              style={{ willChange: isMobile ? 'auto' : 'transform' }}
             >
-              <span className="relative z-10 flex items-center gap-3">
-                Explore Collection
-                <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+              <span className="relative z-10 flex items-center justify-center gap-2 sm:gap-3">
+                <span>Explore Collection</span>
+                <ArrowRight className="group-hover:translate-x-1 transition-transform flex-shrink-0" size={18} />
               </span>
-              <motion.div
-                className="absolute inset-0 shimmer"
-                initial={{ x: '-100%' }}
-                whileHover={{ x: '100%' }}
-                transition={{ duration: 0.6 }}
-              />
+              {!isMobile && (
+                <motion.div
+                  className="absolute inset-0 shimmer"
+                  initial={{ x: '-100%' }}
+                  whileHover={{ x: '100%' }}
+                  transition={{ duration: 0.6 }}
+                />
+              )}
             </motion.button>
           </Link>
         </motion.div>

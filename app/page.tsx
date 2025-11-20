@@ -8,6 +8,7 @@ import ReviewCarousel from '@/components/ReviewCarousel';
 import { motion } from 'framer-motion';
 import { Product } from '@/lib/store';
 import { BASE_URL } from '@/lib/config';
+import { generateStructuredData } from './metadata';
 
 interface Category {
   id: string;
@@ -25,6 +26,36 @@ export default function Home() {
   useEffect(() => {
     fetchCategories();
     fetchProducts();
+    
+    // Add structured data for SEO
+    const organizationData = generateStructuredData('Organization');
+    const websiteData = generateStructuredData('WebSite');
+    
+    const script1 = document.createElement('script');
+    script1.type = 'application/ld+json';
+    script1.text = JSON.stringify(organizationData);
+    script1.id = 'organization-structured-data';
+    
+    const script2 = document.createElement('script');
+    script2.type = 'application/ld+json';
+    script2.text = JSON.stringify(websiteData);
+    script2.id = 'website-structured-data';
+    
+    // Remove existing if any
+    const existing1 = document.getElementById('organization-structured-data');
+    const existing2 = document.getElementById('website-structured-data');
+    if (existing1) existing1.remove();
+    if (existing2) existing2.remove();
+    
+    document.head.appendChild(script1);
+    document.head.appendChild(script2);
+    
+    return () => {
+      const s1 = document.getElementById('organization-structured-data');
+      const s2 = document.getElementById('website-structured-data');
+      if (s1) s1.remove();
+      if (s2) s2.remove();
+    };
   }, []);
 
   const fetchProducts = async () => {

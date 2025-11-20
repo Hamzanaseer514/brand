@@ -10,6 +10,7 @@ import ReviewSection from '@/components/ReviewSection';
 import PerfumeNotesSection from '@/components/PerfumeNotesSection';
 import { Review } from '@/lib/data';
 import { BASE_URL } from '@/lib/config';
+import { generateStructuredData } from '@/app/metadata';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -27,6 +28,47 @@ export default function ProductDetailPage({ params }: PageProps) {
   useEffect(() => {
     fetchProduct();
   }, [id]);
+
+  // Add structured data for SEO when product is loaded
+  useEffect(() => {
+    if (product) {
+      const productData = generateStructuredData('Product', {
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        image: product.image,
+        price: product.discount && product.discount > 0 
+          ? ((product.price * (100 - product.discount)) / 100).toFixed(2)
+          : product.price,
+        inStock: product.inStock,
+        rating: product.rating,
+        reviewsCount: product.reviewsCount,
+      });
+
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.text = JSON.stringify(productData);
+      script.id = 'product-structured-data';
+      
+      // Remove existing if any
+      const existing = document.getElementById('product-structured-data');
+      if (existing) existing.remove();
+      
+      document.head.appendChild(script);
+
+      // Update page title and meta description
+      document.title = `${product.name} | A & N Premium Perfumes`;
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', product.description);
+      }
+
+      return () => {
+        const scriptEl = document.getElementById('product-structured-data');
+        if (scriptEl) scriptEl.remove();
+      };
+    }
+  }, [product]);
 
   const fetchProduct = async () => {
     try {
