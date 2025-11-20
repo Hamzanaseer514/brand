@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Ensure proper routing for direct URL access
+  trailingSlash: false,
 };
 
 export default nextConfig;

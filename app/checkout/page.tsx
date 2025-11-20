@@ -71,7 +71,7 @@ export default function CheckoutPage() {
 
       if (response.ok) {
         alert(`Order placed successfully! Invoice has been sent to ${formData.email}`);
-        clearCart();
+    clearCart();
         // Redirect to home or order confirmation page
         window.location.href = '/';
       } else {
@@ -254,9 +254,9 @@ export default function CheckoutPage() {
                   return (
                     <div key={item.id} className="flex flex-col gap-1">
                       <div className="flex justify-between text-sm text-luxury-ivory/80">
-                        <span>
-                          {item.name} x{item.quantity}
-                        </span>
+                    <span>
+                      {item.name} x{item.quantity}
+                    </span>
                         {item.discount && item.discount > 0 ? (
                           <div className="flex flex-col items-end">
                             <span className="text-luxury-gold font-semibold">
@@ -270,7 +270,7 @@ export default function CheckoutPage() {
                           <span>Rs {(item.price * item.quantity).toFixed(2)}</span>
                         )}
                       </div>
-                    </div>
+                  </div>
                   );
                 })}
               </div>
