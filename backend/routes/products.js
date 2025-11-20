@@ -85,16 +85,21 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    let product = null;
-    
-    // Check if id is a valid MongoDB ObjectId
-    if (mongoose.Types.ObjectId.isValid(id)) {
-      // Try to find by _id (MongoDB ObjectId)
-      product = await Product.findById(id);
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.log(`Invalid ObjectId format: ${id}`);
+      return res.status(400).json({ error: 'Invalid product ID format' });
     }
+    
+    // Convert string to ObjectId
+    const objectId = new mongoose.Types.ObjectId(id);
+    
+    // Find product by _id
+    const product = await Product.findById(objectId);
     
     // If not found, return 404
     if (!product) {
+      console.log(`Product not found for ID: ${id}`);
       return res.status(404).json({ error: 'Product not found' });
     }
 

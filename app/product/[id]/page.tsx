@@ -38,6 +38,8 @@ export default function ProductDetailPage({ params }: PageProps) {
         // Fetch reviews for this product
         await fetchReviews(data.id);
       } else {
+        const errorData = await response.json().catch(() => ({ error: 'Product not found' }));
+        console.error('Error fetching product:', errorData.error || 'Product not found');
         setProduct(null);
       }
     } catch (error) {
