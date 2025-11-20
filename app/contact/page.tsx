@@ -70,7 +70,7 @@ export default function ContactPage() {
     {
       icon: MapPin,
       title: 'Address',
-      content: '123 Perfume Street, Luxury District, Dubai, UAE',
+      content: 'Mohala qilla near govt girls high school more sambrial sialkot',
       link: '#',
     },
   ];

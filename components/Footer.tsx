@@ -112,7 +112,7 @@ export default function Footer() {
             <div className="space-y-4 mb-6">
               <div className="flex items-start gap-3 text-sm text-luxury-ivory/70">
                 <MapPin className="text-luxury-gold mt-1" size={16} />
-                <span>123 Perfume Street, Luxury District, Dubai, UAE</span>
+                <span>Mohala qilla near govt girls high school more sambrial sialkot</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-luxury-ivory/70">
                 <Phone className="text-luxury-gold" size={16} />
