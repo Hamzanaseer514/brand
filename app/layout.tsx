@@ -28,7 +28,7 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://brand-navy-six.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aandnscents.com'),
   title: {
     default: "A & N - Premium Arabic Perfumes | Authentic Ittar Collection",
     template: "%s | A & N Premium Perfumes",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "https://brand-navy-six.vercel.app",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.aandnscents.com",
     siteName: "A & N Premium Perfumes",
     title: "A & N - Premium Arabic Perfumes | Authentic Ittar Collection",
     description: "The Essence of Tradition, Crafted with Luxury. Discover our collection of premium ittars crafted with traditional artistry and the finest ingredients.",
@@ -96,7 +96,7 @@ export const metadata: Metadata = {
     // google: 'your-google-verification-code',
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_SITE_URL || "https://brand-navy-six.vercel.app",
+    canonical: process.env.NEXT_PUBLIC_SITE_URL || "https://www.aandnscents.com",
   },
 };
 

@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://brand-navy-six.vercel.app';
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aandnscents.com';
 
 export const defaultMetadata: Metadata = {
   metadataBase: new URL(baseUrl),

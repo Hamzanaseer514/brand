@@ -5,5 +5,5 @@ Disallow: /api/
 Disallow: /cart
 Disallow: /checkout
 
-Sitemap: https://brand-navy-six.vercel.app/sitemap.xml
+Sitemap: https://www.aandnscents.com/sitemap.xml
 
